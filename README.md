@@ -1,71 +1,50 @@
-# DoNexus Coding Challenge – Backend Working Student
+# Coding Challenge - Working Student
 
-Welcome to the (slightly adapted) challenge! The goal is to wire up a **mini ticketing system** end‑to‑end, secure it and follow best practices.
+## Docker Setup
 
----
+This project includes Docker Compose configuration to run the entire application stack in containers.
 
-## 🗂️ Project overview
+### Prerequisites
 
-* **Frontend:** React 18 (Vite) showing a list of **tickets** and an input for **comments**.  
-  The UI & component logic **already exist**. You only need to fill the request functions in `src/api.js`. No extra styling required.
-* **Backend:** Node.js 18 + Express 5 (currently only a `/ping` endpoint).
-* **Database:** PostgreSQL 16 with three empty tables: `tickets`, `users`, `organisation`. Not connected yet.
+- Docker
+- Docker Compose
 
-Everything starts locally right away – but nothing “talks” to each other yet. That’s where you come in. 😉
+### Running with Docker Compose
 
----
+1. **Start all services:**
+   ```bash
+   docker-compose up
+   ```
 
-## 🚧 Your tasks
+2. **Start services in detached mode:**
+   ```bash
+   docker-compose up -d
+   ```
 
-1. ### Connect Backend ↔ PostgreSQL  
-   * Wire up a DB connection via `process.env.DATABASE_URL` (pick your favourite driver: `node‑postgres`, `Prisma`, `TypeORM`, …).  
-   * **Create a small `db` service module** (`backend/db/index.js`) that exports a query helper.  
-   * Provide migrations/scripts to create the three tables.
+3. **Stop all services:**
+   ```bash
+   docker-compose down
+   ```
 
-2. ### Connect Frontend ↔ Backend  
-   * Replace the fake data with real requests in **`src/api.js`**.  
-   * Implement CRUD endpoints for **tickets** (GET / POST / DELETE / PATCH) in the backend and call them from the frontend.
+4. **Rebuild and start services:**
+   ```bash
+   docker-compose up --build
+   ```
 
-3. ### Security & Best Practices  
-   * **Auth:** Build a token‑based flow (e.g. JWT). A static secret is fine.  
-   * **Row‑Level Security (RLS):** Implement a policy that users can only see their organisation’s tickets.  
-   * **Add one extra security measure you find important** Briefly explain your choice in the README.
+### Services
 
----
+- **Frontend**: React app running on http://localhost:5173
+- **Backend**: Node.js API running on http://localhost:4000
+- **Database**: PostgreSQL running on localhost:5432
 
-## ▶️ Local setup
+### Development
 
-```bash
-# 1) Clone
-git clone <your‑fork>
-cd donexus-coding-challenge
+The Docker setup includes volume mounts for development, so changes to your code will be reflected immediately without rebuilding containers.
 
-# 2) Install dependencies
-npm i
-cd backend && npm i
-cd ../frontend && npm i
+### Database
 
-# 3) Postgres
-createdb donexus_challenge
-psql -d donexus_challenge -f ../db/schema.sql
+The PostgreSQL database will be automatically initialized with the schema from `db/schema.sql` when the container starts for the first time.
 
-# 4) Environment variables
-cp backend/.env.example backend/.env
-# DATABASE_URL=postgresql://user:pw@localhost:5432/donexus_challenge
-# JWT_SECRET=super‑secret
+## Manual Setup
 
-# 5) Start (parallel)
-npm run dev:all          # uses concurrently
-```
-
----
-
-## ✅ Submission
-
-* Push your code in **one** public Git repo or share a private link.  
-* In the PR description, write briefly (max. 150 words):  
-  * What did you implement?  
-  * What would you do next?  
-* Deadline: 48 h after receiving this challenge.
-
-Happy coding – we can’t wait to review your solution! ✨
+If you prefer to run the services manually without Docker, see the individual README files in the `frontend/` and `backend/` directories.

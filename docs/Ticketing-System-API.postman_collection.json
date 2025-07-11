@@ -1,0 +1,303 @@
+{
+	"info": {
+		"_postman_id": "ticketing-system-api",
+		"name": "Ticketing System API",
+		"description": "API collection for the ticketing system. Currently only /ping is implemented. Other endpoints are planned based on the TODO in the code.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Implemented Endpoints",
+			"item": [
+				{
+					"name": "Health Check - Ping",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ping",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ping"
+							]
+						},
+						"description": "Health check endpoint to verify the API is running. This is the only currently implemented endpoint."
+					},
+					"response": []
+				}
+			],
+			"description": "Currently implemented endpoints in the backend"
+		},
+		{
+			"name": "Planned Endpoints (TODO)",
+			"item": [
+				{
+					"name": "Tickets - Get All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tickets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tickets"
+							]
+						},
+						"description": "Get all tickets (filtered by user's organization due to RLS) - NOT YET IMPLEMENTED"
+					},
+					"response": []
+				},
+				{
+					"name": "Tickets - Get by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tickets/{{ticket_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tickets",
+								"{{ticket_id}}"
+							]
+						},
+						"description": "Get a specific ticket by ID - NOT YET IMPLEMENTED"
+					},
+					"response": []
+				},
+				{
+					"name": "Tickets - Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"New Ticket Title\",\n  \"description\": \"Ticket description here\",\n  \"status\": \"open\",\n  \"user_id\": 1,\n  \"organisation_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tickets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tickets"
+							]
+						},
+						"description": "Create a new ticket - NOT YET IMPLEMENTED"
+					},
+					"response": []
+				},
+				{
+					"name": "Tickets - Update",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated Ticket Title\",\n  \"description\": \"Updated description\",\n  \"status\": \"in_progress\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tickets/{{ticket_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tickets",
+								"{{ticket_id}}"
+							]
+						},
+						"description": "Update an existing ticket - NOT YET IMPLEMENTED"
+					},
+					"response": []
+				},
+				{
+					"name": "Tickets - Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tickets/{{ticket_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tickets",
+								"{{ticket_id}}"
+							]
+						},
+						"description": "Delete a ticket - NOT YET IMPLEMENTED"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints that need to be implemented based on the TODO comment in the code"
+		},
+		{
+			"name": "Additional Planned Endpoints",
+			"item": [
+				{
+					"name": "Authentication - Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"alice\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Authenticate user and receive JWT token - NOT YET IMPLEMENTED"
+					},
+					"response": []
+				},
+				{
+					"name": "Users - Get All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": "Get all users - NOT YET IMPLEMENTED"
+					},
+					"response": []
+				},
+				{
+					"name": "Organizations - Get All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/organizations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"organizations"
+							]
+						},
+						"description": "Get all organizations - NOT YET IMPLEMENTED"
+					},
+					"response": []
+				}
+			],
+			"description": "Additional endpoints that would be useful for the ticketing system"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:4000",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string",
+			"description": "JWT token for authentication (not yet implemented)"
+		},
+		{
+			"key": "ticket_id",
+			"value": "1",
+			"type": "string",
+			"description": "Test ticket ID"
+		}
+	]
+} 
