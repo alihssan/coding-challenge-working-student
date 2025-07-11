@@ -10,7 +10,9 @@
     "seed": "node db/seed.js",
     "seed:docker": "sleep 10 && node db/seed.js",
     "seed:typeorm": "node db/seed-typeorm.js",
-    "seed:typeorm:docker": "sleep 10 && node db/seed-typeorm.js"
+    "seed:typeorm:docker": "sleep 10 && node db/seed-typeorm.js",
+    "migrate": "node db/migrations/run-migrations.js",
+    "migrate:docker": "sleep 10 && node db/migrations/run-migrations.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

@@ -22,23 +22,66 @@ async function handleResponse(response) {
 }
 
 // Tickets -------------
-export async function getTickets() {
-  // Example:
-  // const res = await fetch(`${API_URL}/tickets`);
-  // return res.json();
-  return []; // remove when implemented
+export async function getTickets(filters = {}) {
+  const queryParams = new URLSearchParams();
+  if (filters.status) queryParams.append('status', filters.status);
+  if (filters.organisation_id) queryParams.append('organisation_id', filters.organisation_id);
+  if (filters.user_id) queryParams.append('user_id', filters.user_id);
+  if (filters.page) queryParams.append('page', filters.page);
+  if (filters.limit) queryParams.append('limit', filters.limit);
+
+  const url = `${API_URL}/api/tickets${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return handleResponse(response);
+}
+
+export async function getTicketById(id) {
+  const response = await fetch(`${API_URL}/api/tickets/${id}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return handleResponse(response);
 }
 
 export async function createTicket(data) {
-  // await fetch(`${API_URL}/tickets`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+  const response = await fetch(`${API_URL}/api/tickets`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data)
+  });
+  return handleResponse(response);
+}
+
+export async function updateTicket(id, data) {
+  const response = await fetch(`${API_URL}/api/tickets/${id}`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data)
+  });
+  return handleResponse(response);
 }
 
 export async function updateTicketStatus(id, status) {
-  // await fetch(`${API_URL}/tickets/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
+  return updateTicket(id, { status });
 }
 
 export async function deleteTicket(id) {
-  // await fetch(`${API_URL}/tickets/${id}`, { method: 'DELETE' });
+  const response = await fetch(`${API_URL}/api/tickets/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders()
+  });
+  return handleResponse(response);
+}
+
+export async function getTicketStats() {
+  const response = await fetch(`${API_URL}/api/tickets/stats`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return handleResponse(response);
 }
 
 // Authentication -------------

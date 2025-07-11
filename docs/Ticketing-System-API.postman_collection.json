@@ -2,39 +2,194 @@
 	"info": {
 		"_postman_id": "ticketing-system-api",
 		"name": "Ticketing System API",
-		"description": "API collection for the ticketing system. Currently only /ping is implemented. Other endpoints are planned based on the TODO in the code.",
+		"description": "Complete API collection for the ticketing system with JWT authentication and Row-Level Security (RLS). All endpoints are now implemented and functional.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:4000",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "ticket_id",
+			"value": "",
+			"type": "string"
+		}
+	],
 	"item": [
 		{
-			"name": "Implemented Endpoints",
+			"name": "🔐 Authentication",
 			"item": [
 				{
-					"name": "Health Check - Ping",
+					"name": "Register User",
 					"request": {
-						"method": "GET",
-						"header": [],
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"organisationId\": 1\n}"
+						},
 						"url": {
-							"raw": "{{base_url}}/ping",
+							"raw": "{{base_url}}/api/auth/register",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ping"
+								"api",
+								"auth",
+								"register"
 							]
 						},
-						"description": "Health check endpoint to verify the API is running. This is the only currently implemented endpoint."
+						"description": "Register a new user account. Returns user data without password."
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"alice@acme.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Authenticate user and receive JWT token. Use the token in the 'auth_token' variable for other requests.\n\nTest users:\n- Alice: alice@acme.com / password123 (Acme Corp)\n- Bob: bob@acme.com / password123 (Acme Corp)\n- Carol: carol@globex.com / password123 (Globex Inc)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"profile"
+							]
+						},
+						"description": "Get current user profile (requires authentication)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Password",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"password123\",\n  \"newPassword\": \"newpassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"password"
+							]
+						},
+						"description": "Update user password (requires authentication)"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"{{auth_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/refresh",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"refresh"
+							]
+						},
+						"description": "Refresh JWT token"
 					},
 					"response": []
 				}
 			],
-			"description": "Currently implemented endpoints in the backend"
+			"description": "Authentication endpoints for user registration, login, and profile management"
 		},
 		{
-			"name": "Planned Endpoints (TODO)",
+			"name": "🎫 Tickets (RLS Protected)",
 			"item": [
 				{
-					"name": "Tickets - Get All",
+					"name": "Get All Tickets",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -45,20 +200,44 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/tickets",
+							"raw": "{{base_url}}/api/tickets?page=1&limit=10&status=open",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
+								"api",
 								"tickets"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number for pagination"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Number of items per page"
+								},
+								{
+									"key": "status",
+									"value": "open",
+									"description": "Filter by ticket status (open, pending, closed, resolved)"
+								},
+								{
+									"key": "user_id",
+									"value": "",
+									"description": "Filter by user ID",
+									"disabled": true
+								}
 							]
 						},
-						"description": "Get all tickets (filtered by user's organization due to RLS) - NOT YET IMPLEMENTED"
+						"description": "Get all tickets (filtered by user's organization due to RLS). Users can only see tickets from their own organisation."
 					},
 					"response": []
 				},
 				{
-					"name": "Tickets - Get by ID",
+					"name": "Get Ticket by ID",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -69,21 +248,22 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/tickets/{{ticket_id}}",
+							"raw": "{{base_url}}/api/tickets/{{ticket_id}}",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
+								"api",
 								"tickets",
 								"{{ticket_id}}"
 							]
 						},
-						"description": "Get a specific ticket by ID - NOT YET IMPLEMENTED"
+						"description": "Get a specific ticket by ID (filtered by RLS)"
 					},
 					"response": []
 				},
 				{
-					"name": "Tickets - Create",
+					"name": "Create Ticket",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -103,20 +283,21 @@
 							"raw": "{\n  \"title\": \"New Ticket Title\",\n  \"description\": \"Ticket description here\",\n  \"status\": \"open\",\n  \"user_id\": 1,\n  \"organisation_id\": 1\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/tickets",
+							"raw": "{{base_url}}/api/tickets",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
+								"api",
 								"tickets"
 							]
 						},
-						"description": "Create a new ticket - NOT YET IMPLEMENTED"
+						"description": "Create a new ticket. User must belong to the specified organisation."
 					},
 					"response": []
 				},
 				{
-					"name": "Tickets - Update",
+					"name": "Update Ticket",
 					"request": {
 						"method": "PATCH",
 						"header": [
@@ -133,24 +314,25 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"title\": \"Updated Ticket Title\",\n  \"description\": \"Updated description\",\n  \"status\": \"in_progress\"\n}"
+							"raw": "{\n  \"title\": \"Updated Ticket Title\",\n  \"description\": \"Updated description\",\n  \"status\": \"pending\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/tickets/{{ticket_id}}",
+							"raw": "{{base_url}}/api/tickets/{{ticket_id}}",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
+								"api",
 								"tickets",
 								"{{ticket_id}}"
 							]
 						},
-						"description": "Update an existing ticket - NOT YET IMPLEMENTED"
+						"description": "Update an existing ticket (filtered by RLS)"
 					},
 					"response": []
 				},
 				{
-					"name": "Tickets - Delete",
+					"name": "Delete Ticket",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -161,30 +343,130 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/tickets/{{ticket_id}}",
+							"raw": "{{base_url}}/api/tickets/{{ticket_id}}",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
+								"api",
 								"tickets",
 								"{{ticket_id}}"
 							]
 						},
-						"description": "Delete a ticket - NOT YET IMPLEMENTED"
+						"description": "Delete a ticket (filtered by RLS)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Ticket Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tickets/stats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tickets",
+								"stats"
+							]
+						},
+						"description": "Get ticket statistics (filtered by RLS)"
 					},
 					"response": []
 				}
 			],
-			"description": "Endpoints that need to be implemented based on the TODO comment in the code"
+			"description": "Ticket management endpoints with Row-Level Security (RLS). Users can only access tickets from their own organisation."
 		},
 		{
-			"name": "Additional Planned Endpoints",
+			"name": "👥 Users (Admin Only)",
 			"item": [
 				{
-					"name": "Authentication - Login",
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users?page=1&limit=10&organisation_id=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number for pagination"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Number of items per page"
+								},
+								{
+									"key": "organisation_id",
+									"value": "1",
+									"description": "Filter by organisation ID"
+								}
+							]
+						},
+						"description": "Get all users (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{user_id}}"
+							]
+						},
+						"description": "Get a specific user by ID (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
 					"request": {
 						"method": "POST",
 						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
 							{
 								"key": "Content-Type",
 								"value": "application/json",
@@ -193,48 +475,85 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"alice\",\n  \"password\": \"password123\"\n}"
+							"raw": "{\n  \"name\": \"New User\",\n  \"email\": \"newuser@example.com\",\n  \"organisation_id\": 1\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/auth/login",
+							"raw": "{{base_url}}/api/users",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"auth",
-								"login"
-							]
-						},
-						"description": "Authenticate user and receive JWT token - NOT YET IMPLEMENTED"
-					},
-					"response": []
-				},
-				{
-					"name": "Users - Get All",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{auth_token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/users",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
+								"api",
 								"users"
 							]
 						},
-						"description": "Get all users - NOT YET IMPLEMENTED"
+						"description": "Create a new user (admin only)"
 					},
 					"response": []
 				},
 				{
-					"name": "Organizations - Get All",
+					"name": "Update User",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated User Name\",\n  \"email\": \"updated@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{user_id}}"
+							]
+						},
+						"description": "Update an existing user (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{user_id}}"
+							]
+						},
+						"description": "Delete a user (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Statistics",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -245,20 +564,254 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/organizations",
+							"raw": "{{base_url}}/api/users/stats",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"organizations"
+								"api",
+								"users",
+								"stats"
 							]
 						},
-						"description": "Get all organizations - NOT YET IMPLEMENTED"
+						"description": "Get user statistics (admin only)"
 					},
 					"response": []
 				}
 			],
-			"description": "Additional endpoints that would be useful for the ticketing system"
+			"description": "User management endpoints (admin access only)"
+		},
+		{
+			"name": "🏢 Organisations (Admin Only)",
+			"item": [
+				{
+					"name": "Get All Organisations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/organisations?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"organisations"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number for pagination"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Number of items per page"
+								}
+							]
+						},
+						"description": "Get all organisations (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Organisation by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/organisations/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"organisations",
+								"1"
+							]
+						},
+						"description": "Get a specific organisation by ID (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Organisation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"New Organisation\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/organisations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"organisations"
+							]
+						},
+						"description": "Create a new organisation (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Organisation",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Organisation Name\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/organisations/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"organisations",
+								"1"
+							]
+						},
+						"description": "Update an existing organisation (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Organisation",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/organisations/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"organisations",
+								"1"
+							]
+						},
+						"description": "Delete an organisation (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Organisation Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/organisations/stats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"organisations",
+								"stats"
+							]
+						},
+						"description": "Get organisation statistics (admin only)"
+					},
+					"response": []
+				}
+			],
+			"description": "Organisation management endpoints (admin access only)"
+		},
+		{
+			"name": "🔧 System",
+			"item": [
+				{
+					"name": "Health Check - Ping",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ping",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ping"
+							]
+						},
+						"description": "Health check endpoint to verify the API is running"
+					},
+					"response": []
+				},
+				{
+					"name": "API Documentation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api"
+							]
+						},
+						"description": "Get comprehensive API documentation and endpoint information"
+					},
+					"response": []
+				}
+			],
+			"description": "System endpoints for health checks and documentation"
 		}
 	],
 	"event": [
@@ -267,37 +820,17 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					""
+					"// Auto-extract token from login response",
+					"if (pm.request.url.path.includes('/auth/login') && pm.request.method === 'POST') {",
+					"    pm.sendRequest(pm.request, function (err, response) {",
+					"        if (!err && response.json().data && response.json().data.token) {",
+					"            pm.collectionVariables.set('auth_token', response.json().data.token);",
+					"            console.log('Token automatically set from login response');",
+					"        }",
+					"    });",
+					"}"
 				]
 			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"key": "base_url",
-			"value": "http://localhost:4000",
-			"type": "string"
-		},
-		{
-			"key": "auth_token",
-			"value": "",
-			"type": "string",
-			"description": "JWT token for authentication (not yet implemented)"
-		},
-		{
-			"key": "ticket_id",
-			"value": "1",
-			"type": "string",
-			"description": "Test ticket ID"
 		}
 	]
 } 

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
 import { Organisation } from "./Organisation.js";
 import { Ticket } from "./Ticket.js";
 
@@ -25,4 +25,10 @@ export class User {
 
   @OneToMany(() => Ticket, ticket => ticket.user)
   tickets;
+
+  @CreateDateColumn({ name: "created_at" })
+  createdAt;
+
+  @UpdateDateColumn({ name: "updated_at" })
+  updatedAt;
 } 

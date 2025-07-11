@@ -41,3 +41,31 @@ INSERT INTO tickets (title, description, status, user_id, organisation_id) VALUE
   ('Website down',            'Landing page returns 500.',        'open',    3, 2),
   ('Request new laptop',      'Need a MacBook Pro M3.',           'pending', 1, 1),
   ('Email spam issue',        'Receiving lots of spam emails.',   'open',    2, 1);
+
+-- Row-Level Security (RLS) Implementation
+-- Enable RLS on tickets table
+ALTER TABLE tickets ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policy: Users can only see tickets from their organisation
+CREATE POLICY "Users can only see their organisation's tickets" ON tickets
+    FOR ALL
+    USING (
+        organisation_id = (
+            SELECT organisation_id 
+            FROM users 
+            WHERE id = current_setting('app.current_user_id')::integer
+        )
+    );
+
+-- Create a function to set the current user ID for RLS
+CREATE OR REPLACE FUNCTION set_current_user_id(user_id integer)
+RETURNS void AS $$
+BEGIN
+    PERFORM set_config('app.current_user_id', user_id::text, false);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Grant necessary permissions
+GRANT USAGE ON SCHEMA public TO postgres;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO postgres;

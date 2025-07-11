@@ -108,6 +108,74 @@ node test-auth.js
 
 See `docs/JWT-Authentication.md` for detailed documentation.
 
+#### Row-Level Security (RLS)
+
+The system implements database-level Row-Level Security using TypeORM:
+
+**Features:**
+- Users can only see tickets from their own organisation
+- Database-level enforcement (impossible to bypass)
+- TypeORM integration with custom repository
+- Automatic filtering on all ticket operations
+- Performance optimized with proper indexes
+
+**Implementation:**
+- PostgreSQL RLS policies
+- Custom TypeORM repository with RLS support
+- JWT token integration for user context
+- Comprehensive error handling
+
+**Testing RLS:**
+```bash
+# Login as Alice (Acme Corp) - should only see Acme Corp tickets
+curl -X POST http://localhost:4000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"alice@acme.com","password":"password123"}'
+
+# Login as Carol (Globex Inc) - should only see Globex Inc tickets  
+curl -X POST http://localhost:4000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"carol@globex.com","password":"password123"}'
+```
+
+See `docs/TYPEORM-RLS-IMPLEMENTATION.md` for detailed documentation.
+
+#### Database Migrations
+
+The system includes a proper migration system:
+
+**Features:**
+- TypeORM-compatible migration runner
+- SQL-based migrations for complex operations
+- Migration tracking and rollback support
+- Docker-compatible migration scripts
+
+**Running Migrations:**
+```bash
+# Run migrations
+npm run migrate
+
+# Run migrations in Docker
+npm run migrate:docker
+```
+
+#### Frontend-Backend Integration
+
+The frontend now connects to the real backend API:
+
+**Features:**
+- Real API calls replacing fake data
+- Automatic JWT token inclusion
+- Error handling and response processing
+- Filtering and pagination support
+
+**API Functions:**
+- `getTickets(filters)` - Get tickets with filtering
+- `createTicket(data)` - Create new tickets
+- `updateTicket(id, data)` - Update tickets
+- `deleteTicket(id)` - Delete tickets
+- `getTicketStats()` - Get ticket statistics
+
 #### Backend Architecture
 
 The backend follows industry best practices with a clean, scalable architecture:

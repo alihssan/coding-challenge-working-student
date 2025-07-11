@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
 import { User } from "./User.js";
 import { Organisation } from "./Organisation.js";
 
@@ -24,6 +24,9 @@ export class Ticket {
 
   @CreateDateColumn({ name: "created_at" })
   createdAt;
+
+  @UpdateDateColumn({ name: "updated_at" })
+  updatedAt;
 
   @ManyToOne(() => User, user => user.tickets)
   @JoinColumn({ name: "user_id" })
