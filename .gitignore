@@ -10,3 +10,5 @@ yarn-error.log*
 # Env
 .env
 backend/.env
+backend/node_modules
+backend/db/seed-typeorm.js
