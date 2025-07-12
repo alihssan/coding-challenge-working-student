@@ -112,23 +112,60 @@ See `docs/JWT-Authentication.md` for detailed documentation.
 
 #### Row-Level Security (RLS)
 
-The system implements database-level Row-Level Security using TypeORM:
+The system implements comprehensive database-level Row-Level Security using PostgreSQL RLS policies with TypeORM integration:
 
-**Features:**
-- Users can only see tickets from their own organisation
-- Admin users can see all tickets across all organisations
-- Database-level enforcement (impossible to bypass)
-- TypeORM integration with custom repository
-- Comprehensive RLS policies for SELECT, INSERT, UPDATE, DELETE
-- Admin users cannot create tickets (business rule enforced by RLS)
-- Regular users can only modify tickets from their organisation
-- Performance optimized with proper indexes
+**RLS Policies Overview:**
 
-**Implementation:**
-- PostgreSQL RLS policies
-- Custom TypeORM repository with RLS support
-- JWT token integration for user context
-- Comprehensive error handling
+**1. SELECT Policy (`tickets_select_policy`)**
+- **Admin users**: Can view all tickets across all organizations
+- **Regular users**: Can only view tickets from their own organization
+- **Enforcement**: Database-level filtering using `organisation_id = get_current_user_organisation_id()`
+
+**2. INSERT Policy (`tickets_insert_policy`)**
+- **Admin users**: Cannot create tickets (business rule enforced at database level)
+- **Regular users**: Can only create tickets for their own organization
+- **Validation**: `organisation_id = get_current_user_organisation_id()` AND `NOT is_current_user_admin()`
+
+**3. UPDATE Policy (`tickets_update_policy`)**
+- **Admin users**: Can update any ticket across all organizations
+- **Regular users**: Can only update tickets from their own organization
+- **Dual validation**: Both `USING` (for finding records) and `WITH CHECK` (for new values)
+
+**4. DELETE Policy (`tickets_delete_policy`)**
+- **Admin users**: Can delete any ticket across all organizations
+- **Regular users**: Can only delete tickets from their own organization
+- **Enforcement**: `organisation_id = get_current_user_organisation_id()`
+
+**Database Functions:**
+
+**`set_current_user_id(user_id integer)`**
+- Sets the current user context for RLS policies
+- Called before every database operation
+- Stores user ID in PostgreSQL session variables
+
+**`get_current_user_organisation_id()`**
+- Returns the organization ID of the current user
+- Used by RLS policies to filter data
+- Handles null/error cases gracefully
+
+**`is_current_user_admin()`**
+- Checks if the current user has admin role
+- Used by RLS policies for admin-specific logic
+- Returns boolean for policy evaluation
+
+**Key Features:**
+- **Database-level enforcement**: Impossible to bypass, even with direct database access
+- **TypeORM integration**: Custom repository with RLS support
+- **JWT token integration**: User context from authentication tokens
+- **Comprehensive coverage**: All CRUD operations protected
+- **Performance optimized**: No additional application-level filtering needed
+- **Error handling**: Graceful handling of edge cases
+
+**Security Benefits:**
+- **Data isolation**: Users cannot access data from other organizations
+- **Privilege escalation prevention**: Admin users cannot create tickets (business rule)
+- **Consistent enforcement**: Works across all database connections
+- **Audit trail**: All access controlled at database level
 
 **Testing RLS:**
 ```bash
@@ -150,6 +187,12 @@ curl -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@system.com","password":"password123"}'
 ```
+
+**Expected Behavior:**
+- **Alice (Acme Corp)**: Sees tickets 1, 2, 4, 5 (Acme Corp only)
+- **Carol (Globex Inc)**: Sees ticket 3 (Globex Inc only)
+- **Admin**: Sees all 35 tickets but cannot create new tickets
+- **Cross-organization access**: Impossible due to RLS enforcement
 
 See `docs/TYPEORM-RLS-IMPLEMENTATION.md` for detailed documentation.
 
