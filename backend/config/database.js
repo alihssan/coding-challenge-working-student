@@ -11,11 +11,16 @@ export const createDataSource = () => {
     username: process.env.DB_USER || "postgres",
     password: process.env.DB_PASSWORD || "postgres",
     database: process.env.DB_NAME || "ticketing_db",
-    synchronize: process.env.NODE_ENV === "development",
+    synchronize: false,
     logging: process.env.NODE_ENV === "development",
     entities: [Organisation, User, Ticket],
     subscribers: [],
     migrations: [],
+    extra: {
+      max: 20,
+      connectionTimeoutMillis: 5000,
+      idleTimeoutMillis: 30000,
+    },
   });
 };
 

@@ -8,32 +8,32 @@ export class AuthController {
   }
 
   register = asyncHandler(async (req, res) => {
-    const { name, email, password, organisationId } = req.body;
+    const { name, email, password, organisation_id } = req.body;
 
     // Validate required fields
-    if (!name || !email || !password || !organisationId) {
-      return ApiResponse.error(res, 'All fields are required', 400);
+    if (!name || !email || !password || !organisation_id) {
+      return ApiResponse.error(res, 400, 'All fields are required');
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return ApiResponse.error(res, 'Invalid email format', 400);
+      return ApiResponse.error(res, 400, 'Invalid email format');
     }
 
     // Validate password strength
     if (password.length < 6) {
-      return ApiResponse.error(res, 'Password must be at least 6 characters long', 400);
+      return ApiResponse.error(res, 400, 'Password must be at least 6 characters long');
     }
 
     const user = await this.authService.register({
       name,
       email,
       password,
-      organisationId
+      organisation_id
     });
 
-    return ApiResponse.created(res, user, 'User registered successfully');
+    return ApiResponse.created(res, user);
   });
 
   login = asyncHandler(async (req, res) => {
@@ -41,19 +41,24 @@ export class AuthController {
 
     // Validate required fields
     if (!email || !password) {
-      return ApiResponse.error(res, 'Email and password are required', 400);
+      return ApiResponse.error(res, 400, 'Email and password are required');
     }
 
-    const result = await this.authService.login(email, password);
-
-    return ApiResponse.success(res, result, 'Login successful');
+    try {
+      const result = await this.authService.login(email, password);
+      return ApiResponse.success(res, result);
+    } catch (error) {
+      // Handle specific error status codes from AuthService
+      const statusCode = error.statusCode || 500;
+      return ApiResponse.error(res, statusCode, error.message);
+    }
   });
 
   getProfile = asyncHandler(async (req, res) => {
     const userId = req.user.userId;
     const user = await this.authService.getUserById(userId);
     
-    return ApiResponse.success(res, user, 'Profile retrieved successfully');
+    return ApiResponse.success(res, user);
   });
 
   updatePassword = asyncHandler(async (req, res) => {
@@ -62,28 +67,28 @@ export class AuthController {
 
     // Validate required fields
     if (!currentPassword || !newPassword) {
-      return ApiResponse.error(res, 'Current password and new password are required', 400);
+      return ApiResponse.error(res, 400, 'Current password and new password are required');
     }
 
     // Validate new password strength
     if (newPassword.length < 6) {
-      return ApiResponse.error(res, 'New password must be at least 6 characters long', 400);
+      return ApiResponse.error(res, 400, 'New password must be at least 6 characters long');
     }
 
     const user = await this.authService.updatePassword(userId, currentPassword, newPassword);
     
-    return ApiResponse.success(res, user, 'Password updated successfully');
+    return ApiResponse.success(res, user);
   });
 
   refreshToken = asyncHandler(async (req, res) => {
     const { token } = req.body;
 
     if (!token) {
-      return ApiResponse.error(res, 'Token is required', 400);
+      return ApiResponse.error(res, 400, 'Token is required');
     }
 
     const newToken = await this.authService.refreshToken(token);
     
-    return ApiResponse.success(res, { token: newToken }, 'Token refreshed successfully');
+    return ApiResponse.success(res, { token: newToken });
   });
 } 

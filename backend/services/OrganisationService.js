@@ -3,16 +3,18 @@ import { Organisation } from '../db/entities/Organisation.js';
 
 export class OrganisationService {
   constructor() {
-    this.orgRepo = getRepository(Organisation);
+    // Lazy loading of repositories
+  }
+
+  get orgRepo() {
+    return getRepository(Organisation);
   }
 
   async findAll(filters = {}) {
     const { page = 1, limit = 10 } = filters;
     
     let queryBuilder = this.orgRepo
-      .createQueryBuilder('organisation')
-      .leftJoinAndSelect('organisation.users', 'users')
-      .leftJoinAndSelect('organisation.tickets', 'tickets');
+      .createQueryBuilder('organisation');
     
     // Add pagination
     const offset = (page - 1) * limit;
@@ -33,8 +35,7 @@ export class OrganisationService {
 
   async findById(id) {
     const organisation = await this.orgRepo.findOne({
-      where: { id: parseInt(id) },
-      relations: ['users', 'tickets']
+      where: { id: parseInt(id) }
     });
     
     if (!organisation) {

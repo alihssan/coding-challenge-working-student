@@ -6,12 +6,22 @@ import { TICKET_STATUS } from '../constants/index.js';
 
 export class TicketService {
   constructor() {
-    this.ticketRepo = getRepository(Ticket);
-    this.userRepo = getRepository(User);
-    this.orgRepo = getRepository(Organisation);
+    // Lazy loading of repositories
   }
 
-  async findAll(filters = {}) {
+  get ticketRepo() {
+    return getRepository(Ticket);
+  }
+
+  get userRepo() {
+    return getRepository(User);
+  }
+
+  get orgRepo() {
+    return getRepository(Organisation);
+  }
+
+  async findAll(filters = {}, user = null) {
     const { status, organisation_id, user_id, page = 1, limit = 10 } = filters;
     
     let queryBuilder = this.ticketRepo
@@ -23,7 +33,8 @@ export class TicketService {
       queryBuilder = queryBuilder.andWhere('ticket.status = :status', { status });
     }
     
-    if (organisation_id) {
+    // Only filter by organisation if user is not admin
+    if (organisation_id && (!user || user.role !== 'admin')) {
       queryBuilder = queryBuilder.andWhere('ticket.organisationId = :organisationId', { organisationId: organisation_id });
     }
     

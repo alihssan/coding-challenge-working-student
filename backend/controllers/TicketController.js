@@ -16,35 +16,33 @@ export class TicketController {
       limit: req.query.limit
     };
 
-    const result = await this.ticketService.findAll(filters, req.user.userId);
+    const result = await this.ticketService.findAll(filters, req.user);
     
-    return ApiResponse.success(res, result.tickets, 'Tickets retrieved successfully', 200, {
-      pagination: result.pagination
-    });
+    return ApiResponse.success(res, result.tickets);
   });
 
   getTicketById = asyncHandler(async (req, res) => {
-    const ticket = await this.ticketService.findById(req.params.id, req.user.userId);
-    return ApiResponse.success(res, ticket, 'Ticket retrieved successfully');
+    const ticket = await this.ticketService.findById(req.params.id, req.user);
+    return ApiResponse.success(res, ticket);
   });
 
   createTicket = asyncHandler(async (req, res) => {
-    const ticket = await this.ticketService.create(req.body, req.user.userId);
-    return ApiResponse.created(res, ticket, 'Ticket created successfully');
+    const ticket = await this.ticketService.create(req.body, req.user);
+    return ApiResponse.created(res, ticket);
   });
 
   updateTicket = asyncHandler(async (req, res) => {
-    const ticket = await this.ticketService.update(req.params.id, req.body, req.user.userId);
-    return ApiResponse.success(res, ticket, 'Ticket updated successfully');
+    const ticket = await this.ticketService.update(req.params.id, req.body, req.user);
+    return ApiResponse.success(res, ticket);
   });
 
   deleteTicket = asyncHandler(async (req, res) => {
-    await this.ticketService.delete(req.params.id, req.user.userId);
-    return ApiResponse.success(res, null, 'Ticket deleted successfully');
+    await this.ticketService.delete(req.params.id, req.user);
+    return ApiResponse.success(res, null);
   });
 
   getTicketStats = asyncHandler(async (req, res) => {
-    const stats = await this.ticketService.getTicketStats(req.user.userId);
-    return ApiResponse.success(res, stats, 'Ticket statistics retrieved successfully');
+    const stats = await this.ticketService.getTicketStats(req.user);
+    return ApiResponse.success(res, stats);
   });
 } 

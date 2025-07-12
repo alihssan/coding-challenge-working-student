@@ -1,14 +1,17 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { User } from '../db/entities/User.js';
-import { getRepository } from 'typeorm';
+import { getRepository } from '../db/typeorm.js';
 import { config } from '../config/app.js';
 
 export class AuthService {
   constructor() {
-    this.userRepository = getRepository(User);
     this.jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
     this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '24h';
+  }
+
+  get userRepository() {
+    return getRepository(User);
   }
 
   /**
@@ -17,7 +20,7 @@ export class AuthService {
    * @returns {Object} Created user (without password)
    */
   async register(userData) {
-    const { name, email, password, organisationId } = userData;
+    const { name, email, password, organisation_id } = userData;
 
     // Check if user already exists
     const existingUser = await this.userRepository.findOne({ where: { email } });
@@ -34,7 +37,7 @@ export class AuthService {
       name,
       email,
       password: hashedPassword,
-      organisationId
+      organisationId: organisation_id
     });
 
     const savedUser = await this.userRepository.save(user);
@@ -58,13 +61,17 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new Error('Invalid email or password');
+      const error = new Error('User not found');
+      error.statusCode = 404;
+      throw error;
     }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new Error('Invalid email or password');
+      const error = new Error('Invalid password');
+      error.statusCode = 400;
+      throw error;
     }
 
     // Generate JWT token
@@ -88,7 +95,8 @@ export class AuthService {
       userId: user.id,
       email: user.email,
       organisationId: user.organisationId,
-      name: user.name
+      name: user.name,
+      role: user.role
     };
 
     return jwt.sign(payload, this.jwtSecret, {

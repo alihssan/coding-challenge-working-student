@@ -4,15 +4,15 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js",
+    "dev": "nodemon",
+    "start": "node --loader ts-node/esm index.js",
     "test": "echo \"No tests yet\"",
     "seed": "node db/seed.js",
     "seed:docker": "sleep 10 && node db/seed.js",
-    "seed:typeorm": "node db/seed-typeorm.js",
-    "seed:typeorm:docker": "sleep 10 && node db/seed-typeorm.js",
-    "migrate": "node db/migrations/run-migrations.js",
-    "migrate:docker": "sleep 10 && node db/migrations/run-migrations.js"
+    "seed:typeorm": "node --experimental-specifier-resolution=node --loader ts-node/esm db/seed-typeorm.js",
+    "seed:typeorm:docker": "sleep 10 && node --experimental-specifier-resolution=node --loader ts-node/esm db/seed-typeorm.js",
+    "migrate": "node --experimental-specifier-resolution=node --loader ts-node/esm migrations/run-migrations.js",
+    "migrate:docker": "sleep 10 && node --experimental-specifier-resolution=node --loader ts-node/esm migrations/run-migrations.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -27,6 +27,13 @@
     "typeorm": "^0.3.17"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "@types/node": "^24.0.13",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "typeorm": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   }
 }

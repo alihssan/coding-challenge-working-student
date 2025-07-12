@@ -1,65 +1,97 @@
-import { useEffect, useState } from 'react';
-import { getTickets, createTicket } from './api';
+import { useState, useEffect } from 'react';
+import { isAuthenticated, getCurrentUser, logout } from './api';
+import Auth from './components/Auth';
+import Tickets from './components/Tickets';
 
 function App() {
-  const [tickets, setTickets] = useState([]);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [user, setUser] = useState(getCurrentUser());
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      const data = await getTickets();
-      setTickets(data);
-    })();
+    // Check if user is already authenticated
+    if (isAuthenticated()) {
+      setUser(getCurrentUser());
+    }
+    setLoading(false);
   }, []);
 
-  const handleCreate = async () => {
-    if (!title.trim()) return;
-    await createTicket({ title, description, user_id: 1, organisation_id: 1 });
-    // TODO: refresh list afterwards
-    setTitle('');
-    setDescription('');
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
   };
 
+  const handleLogout = () => {
+    logout();
+    setUser(null);
+  };
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
+        Loading...
+      </div>
+    );
+  }
+
   return (
-    <main style={{ maxWidth: 800, margin: '2rem auto', fontFamily: 'system-ui' }}>
-      <h1>Ticketing MVP</h1>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+      {/* Header */}
+      {user && (
+        <header style={{
+          backgroundColor: 'white',
+          borderBottom: '1px solid #ddd',
+          padding: '1rem 2rem',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            maxWidth: 1200,
+            margin: '0 auto'
+          }}>
+            <h1 style={{ margin: 0, color: '#333' }}>Ticketing System</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span style={{ color: '#666' }}>
+                Welcome, {user.name || user.email}!
+              </span>
+              <span style={{
+                padding: '0.25rem 0.5rem',
+                backgroundColor: user.role === 'admin' ? '#dc3545' : '#28a745',
+                color: 'white',
+                borderRadius: 4,
+                fontSize: '0.875rem',
+                fontWeight: 'bold',
+                textTransform: 'capitalize'
+              }}>
+                {user.role}
+              </span>
+              <button
+                onClick={handleLogout}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 4,
+                  cursor: 'pointer'
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </header>
+      )}
 
-      {/* Table view */}
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left' }}>ID</th>
-            <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left' }}>Title</th>
-            <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left' }}>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tickets.map(ticket => (
-            <tr /* BUG: missing key prop here */>
-              <td style={{ padding: '4px 0' }}>{ticket.id}</td>
-              <td>{ticket.title}</td>
-              <td>{ticket.status}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h2 style={{ marginTop: '2rem' }}>Create ticket</h2>
-      <input
-        style={{ width: '100%', padding: 8 }}
-        value={title}
-        onChange={e => setTitle(e.target.value)}
-        placeholder="Title"
-      />
-      <textarea
-        style={{ width: '100%', padding: 8, marginTop: 8 }}
-        value={description}
-        onChange={e => setDescription(e.target.value)}
-        placeholder="Description"
-      />
-      <button style={{ marginTop: 8 }} onClick={handleCreate}>Create</button>
-    </main>
+      {/* Main Content */}
+      <main>
+        {!user ? (
+          <Auth onLoginSuccess={handleLoginSuccess} />
+        ) : (
+          <Tickets user={user} />
+        )}
+      </main>
+    </div>
   );
 }
 

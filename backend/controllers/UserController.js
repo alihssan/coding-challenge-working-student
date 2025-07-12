@@ -14,35 +14,33 @@ export class UserController {
       limit: req.query.limit
     };
 
-    const result = await this.userService.findAll(filters);
+    const result = await this.userService.findAll(filters, req.user);
     
-    return ApiResponse.success(res, result.users, 'Users retrieved successfully', 200, {
-      pagination: result.pagination
-    });
+    return ApiResponse.success(res, result.users);
   });
 
   getUserById = asyncHandler(async (req, res) => {
     const user = await this.userService.findById(req.params.id);
-    return ApiResponse.success(res, user, 'User retrieved successfully');
+    return ApiResponse.success(res, user);
   });
 
   createUser = asyncHandler(async (req, res) => {
     const user = await this.userService.create(req.body);
-    return ApiResponse.created(res, user, 'User created successfully');
+    return ApiResponse.created(res, user);
   });
 
   updateUser = asyncHandler(async (req, res) => {
     const user = await this.userService.update(req.params.id, req.body);
-    return ApiResponse.success(res, user, 'User updated successfully');
+    return ApiResponse.success(res, user);
   });
 
   deleteUser = asyncHandler(async (req, res) => {
     await this.userService.delete(req.params.id);
-    return ApiResponse.success(res, null, 'User deleted successfully');
+    return ApiResponse.success(res, null);
   });
 
   getUserStats = asyncHandler(async (req, res) => {
     const stats = await this.userService.getUserStats();
-    return ApiResponse.success(res, stats, 'User statistics retrieved successfully');
+    return ApiResponse.success(res, stats);
   });
 } 

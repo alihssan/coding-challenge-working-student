@@ -4,18 +4,26 @@ import { Organisation } from '../db/entities/Organisation.js';
 
 export class UserService {
   constructor() {
-    this.userRepo = getRepository(User);
-    this.orgRepo = getRepository(Organisation);
+    // Lazy loading of repositories
   }
 
-  async findAll(filters = {}) {
+  get userRepo() {
+    return getRepository(User);
+  }
+
+  get orgRepo() {
+    return getRepository(Organisation);
+  }
+
+  async findAll(filters = {}, user = null) {
     const { organisation_id, page = 1, limit = 10 } = filters;
     
     let queryBuilder = this.userRepo
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.organisation', 'organisation');
     
-    if (organisation_id) {
+    // Only filter by organisation if user is not admin
+    if (organisation_id && (!user || user.role !== 'admin')) {
       queryBuilder = queryBuilder.andWhere('user.organisationId = :organisationId', { organisationId: organisation_id });
     }
     

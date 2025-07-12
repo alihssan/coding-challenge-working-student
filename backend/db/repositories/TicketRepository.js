@@ -15,9 +15,7 @@ export class TicketRepository extends Repository {
   async findAllWithRLS(filters = {}, userId) {
     await this.setCurrentUser(userId);
     
-    const queryBuilder = this.createQueryBuilder('ticket')
-      .leftJoinAndSelect('ticket.user', 'user')
-      .leftJoinAndSelect('ticket.organisation', 'organisation');
+    const queryBuilder = this.createQueryBuilder('ticket');
     
     // Apply filters
     if (filters.status) {
@@ -54,8 +52,7 @@ export class TicketRepository extends Repository {
     await this.setCurrentUser(userId);
     
     const ticket = await this.findOne({
-      where: { id: parseInt(id) },
-      relations: ['user', 'organisation']
+      where: { id: parseInt(id) }
     });
     
     if (!ticket) {
@@ -72,10 +69,9 @@ export class TicketRepository extends Repository {
     const ticket = this.create(ticketData);
     const savedTicket = await this.save(ticket);
     
-    // Return the created ticket with relations
+    // Return the created ticket
     return await this.findOne({
-      where: { id: savedTicket.id },
-      relations: ['user', 'organisation']
+      where: { id: savedTicket.id }
     });
   }
 
@@ -99,10 +95,9 @@ export class TicketRepository extends Repository {
     ticket.updatedAt = new Date();
     const updatedTicket = await this.save(ticket);
     
-    // Return the updated ticket with relations
+    // Return the updated ticket
     return await this.findOne({
-      where: { id: updatedTicket.id },
-      relations: ['user', 'organisation']
+      where: { id: updatedTicket.id }
     });
   }
 
@@ -124,6 +119,111 @@ export class TicketRepository extends Repository {
   async getStatsWithRLS(userId) {
     await this.setCurrentUser(userId);
     
+    const stats = await this.createQueryBuilder('ticket')
+      .select('ticket.status', 'status')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('ticket.status')
+      .getRawMany();
+    
+    return stats;
+  }
+
+  // Find all tickets without RLS (for admin users)
+  async findAllWithoutRLS(filters = {}) {
+    const queryBuilder = this.createQueryBuilder('ticket');
+    
+    // Apply filters
+    if (filters.status) {
+      queryBuilder.andWhere('ticket.status = :status', { status: filters.status });
+    }
+    
+    if (filters.user_id) {
+      queryBuilder.andWhere('ticket.userId = :userId', { userId: filters.user_id });
+    }
+    
+    // Add pagination
+    const page = parseInt(filters.page) || 1;
+    const limit = parseInt(filters.limit) || 10;
+    const offset = (page - 1) * limit;
+    
+    queryBuilder.skip(offset).take(limit);
+    queryBuilder.orderBy('ticket.createdAt', 'DESC');
+    
+    const [tickets, total] = await queryBuilder.getManyAndCount();
+    
+    return {
+      tickets,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    };
+  }
+
+  // Find ticket by ID without RLS (for admin users)
+  async findByIdWithoutRLS(id) {
+    const ticket = await this.findOne({
+      where: { id: parseInt(id) }
+    });
+    
+    if (!ticket) {
+      throw new Error('Ticket not found');
+    }
+    
+    return ticket;
+  }
+
+  // Create ticket without RLS (for admin users)
+  async createWithoutRLS(ticketData) {
+    const ticket = this.create(ticketData);
+    const savedTicket = await this.save(ticket);
+    
+    // Return the created ticket
+    return await this.findOne({
+      where: { id: savedTicket.id }
+    });
+  }
+
+  // Update ticket without RLS (for admin users)
+  async updateWithoutRLS(id, updateData) {
+    const ticket = await this.findOne({ where: { id: parseInt(id) } });
+    
+    if (!ticket) {
+      throw new Error('Ticket not found');
+    }
+    
+    // Update only provided fields
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] !== undefined) {
+        ticket[key] = updateData[key];
+      }
+    });
+    
+    ticket.updatedAt = new Date();
+    const updatedTicket = await this.save(ticket);
+    
+    // Return the updated ticket
+    return await this.findOne({
+      where: { id: updatedTicket.id }
+    });
+  }
+
+  // Delete ticket without RLS (for admin users)
+  async deleteWithoutRLS(id) {
+    const ticket = await this.findOne({ where: { id: parseInt(id) } });
+    
+    if (!ticket) {
+      throw new Error('Ticket not found');
+    }
+    
+    await this.remove(ticket);
+    return true;
+  }
+
+  // Get ticket stats without RLS (for admin users)
+  async getStatsWithoutRLS() {
     const stats = await this.createQueryBuilder('ticket')
       .select('ticket.status', 'status')
       .addSelect('COUNT(*)', 'count')

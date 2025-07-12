@@ -16,6 +16,9 @@ export class User {
   @Column({ type: "text" })
   password;
 
+  @Column({ type: "text", default: "user" })
+  role;
+
   @Column({ name: "organisation_id" })
   organisationId;
 

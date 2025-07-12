@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { AppDataSource } from '../../config/database.js';
+import { AppDataSource } from '../config/database.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,7 +55,7 @@ async function applyMigration(migrationName, migrationPath) {
 // Run all pending migrations
 async function runMigrations() {
   try {
-    console.log('🚀 Starting TypeORM database migrations...\n');
+    console.log('🚀 Starting database migrations...\n');
     
     // Initialize database connection
     await AppDataSource.initialize();
