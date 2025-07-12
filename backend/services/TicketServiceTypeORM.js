@@ -25,20 +25,25 @@ export class TicketServiceTypeORM {
   async findAll(filters = {}, user) {
     const userId = user?.userId || user;
     
-    // Check if user is admin - if so, bypass RLS and return all tickets
+    console.log(`TicketServiceTypeORM.findAll - User:`, user);
+    console.log(`TicketServiceTypeORM.findAll - User ID: ${userId}, Role: ${user?.role}`);
+    
+    // Check if user is admin - if so, use without RLS but still pass user ID for RLS policies
     if (user?.role === 'admin') {
-      return await this.ticketRepository.findAllWithoutRLS(filters);
+      console.log(`Using findAllWithoutRLS for admin user`);
+      return await this.ticketRepository.findAllWithoutRLS(filters, userId);
     }
     
+    console.log(`Using findAllWithRLS for regular user`);
     return await this.ticketRepository.findAllWithRLS(filters, userId);
   }
 
   async findById(id, user) {
     const userId = user?.userId || user;
     
-    // Check if user is admin - if so, bypass RLS
+    // Check if user is admin - if so, use without RLS but still pass user ID for RLS policies
     if (user?.role === 'admin') {
-      return await this.ticketRepository.findByIdWithoutRLS(id);
+      return await this.ticketRepository.findByIdWithoutRLS(id, userId);
     }
     
     return await this.ticketRepository.findByIdWithRLS(id, userId);
@@ -48,7 +53,7 @@ export class TicketServiceTypeORM {
     const userId = user?.userId || user;
     const { title, description, status, user_id, organisation_id } = ticketData;
     
-    // Disable ticket creation for admin users
+    // Disable ticket creation for admin users (RLS will also block this)
     if (user?.role === 'admin') {
       throw new Error('Admin users cannot create tickets. Only regular users can create tickets.');
     }
@@ -113,9 +118,9 @@ export class TicketServiceTypeORM {
       throw new Error('No valid fields to update');
     }
     
-    // Check if user is admin - if so, bypass RLS
+    // Check if user is admin - if so, use without RLS but still pass user ID for RLS policies
     if (user?.role === 'admin') {
-      return await this.ticketRepository.updateWithoutRLS(id, filteredUpdateData);
+      return await this.ticketRepository.updateWithoutRLS(id, filteredUpdateData, userId);
     }
     
     return await this.ticketRepository.updateWithRLS(id, filteredUpdateData, userId);
@@ -124,9 +129,9 @@ export class TicketServiceTypeORM {
   async delete(id, user) {
     const userId = user?.userId || user;
     
-    // Check if user is admin - if so, bypass RLS
+    // Check if user is admin - if so, use without RLS but still pass user ID for RLS policies
     if (user?.role === 'admin') {
-      return await this.ticketRepository.deleteWithoutRLS(id);
+      return await this.ticketRepository.deleteWithoutRLS(id, userId);
     }
     
     return await this.ticketRepository.deleteWithRLS(id, userId);
@@ -135,11 +140,25 @@ export class TicketServiceTypeORM {
   async getTicketStats(user) {
     const userId = user?.userId || user;
     
-    // Check if user is admin - if so, bypass RLS and return stats for all tickets
+    // Check if user is admin - if so, use without RLS but still pass user ID for RLS policies
     if (user?.role === 'admin') {
-      return await this.ticketRepository.getStatsWithoutRLS();
+      const result = await this.ticketRepository.getStatsWithoutRLS(userId);
+      return {
+        total: result.total,
+        open: result.stats.find(s => s.status === 'open')?.count || 0,
+        in_progress: result.stats.find(s => s.status === 'in_progress')?.count || 0,
+        closed: result.stats.find(s => s.status === 'closed')?.count || 0,
+        pending: result.stats.find(s => s.status === 'pending')?.count || 0
+      };
     }
     
-    return await this.ticketRepository.getStatsWithRLS(userId);
+    const result = await this.ticketRepository.getStatsWithRLS(userId);
+    return {
+      total: result.total,
+      open: result.stats.find(s => s.status === 'open')?.count || 0,
+      in_progress: result.stats.find(s => s.status === 'in_progress')?.count || 0,
+      closed: result.stats.find(s => s.status === 'closed')?.count || 0,
+      pending: result.stats.find(s => s.status === 'pending')?.count || 0
+    };
   }
 } 

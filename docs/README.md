@@ -23,7 +23,7 @@ This is a full-stack ticketing system built with Node.js/Express backend, React 
 - `backend/db/entities/` - Entity definitions
 - `backend/db/repositories/` - Custom repositories
 - `db/schema.sql` - Database schema with RLS
-- `backend/db/seed-typeorm.js` - Seeding script
+- `db/schema.sql` - Database schema and seed data (automatically run by Docker)
 
 ### ✅ Task 2: Frontend ↔ Backend Connection
 **Status:** COMPLETED
@@ -198,11 +198,9 @@ Error message sanitization is crucial for security because it prevents informati
    VITE_API_URL=http://localhost:4000
    ```
 
-5. **Seed the database**
-   ```bash
-   cd backend
-   npm run seed:typeorm
-   ```
+5. **Database is automatically seeded**
+   The database is automatically seeded via `db/schema.sql` when Docker starts up.
+   No manual seeding required!
 
 6. **Start the servers**
    ```bash
@@ -217,16 +215,14 @@ Error message sanitization is crucial for security because it prevents informati
 
 ### Default Users
 
-**Admin User:**
-- Email: `ali@donexus.com`
-- Password: `password123`
-- Role: `admin`
-- Organisation: Acme Corp (but can access all)
-
-**Regular Users:**
-- Alice: `alice@acme.com` / `password123` (Acme Corp)
-- Bob: `bob@acme.com` / `password123` (Acme Corp)
-- Carol: `carol@globex.com` / `password123` (Globex Inc)
+**Test Users (all with password `password123`):**
+- Alice: `alice@acme.com` (Acme Corp)
+- Bob: `bob@acme.com` (Acme Corp)
+- Carol: `carol@globex.com` (Globex Inc)
+- Sarah: `sarah@techcorp.com` (TechCorp Solutions)
+- Michael: `michael@techcorp.com` (TechCorp Solutions)
+- James: `james@digitalinnovations.com` (Digital Innovations Ltd)
+- And 15 more users across 10 organizations...
 
 ## Testing
 

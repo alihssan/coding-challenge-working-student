@@ -133,8 +133,8 @@ export class Ticket {
 - `backend/migrations/run-migrations.js` - Migration runner
 
 **Seeding Scripts:**
-- `backend/db/seed-typeorm.js` - Main seeding script using TypeORM
-- `backend/db/example-seed-typeorm.js` - Example seeding data
+- `db/schema.sql` - Database schema and seed data (automatically run by Docker)
+- `backend/db/example-seed-typeorm.js` - Example seeding data (for reference only)
 
 **Available Commands:**
 ```bash
@@ -142,9 +142,8 @@ export class Ticket {
 npm run migrate
 npm run migrate:docker
 
-# Seed database
-npm run seed:typeorm
-npm run seed:typeorm:docker
+# Database is automatically seeded via db/schema.sql
+# No manual seeding required!
 ```
 
 ### 6. Environment Configuration

@@ -47,27 +47,24 @@ The PostgreSQL database will be automatically initialized with the schema from `
 
 #### Seeding the Database
 
-To populate the database with sample data, you can run the seed script:
+The database is automatically seeded when you start the Docker containers. The `db/schema.sql` file contains comprehensive seed data that is automatically executed by PostgreSQL on first startup.
 
+**No manual seeding required!** The database will be populated with:
+
+**To reseed the database (if needed):**
 ```bash
-# Option 1: Run seed script directly (TypeORM)
-./seed-docker.sh
+# Restart Docker containers to reseed
+docker compose down
+docker compose up
 
-# Option 2: Run seed manually (TypeORM)
-docker-compose exec backend npm run seed:typeorm
-
-# Option 3: Run seed locally (TypeORM)
-cd backend
-npm run seed:typeorm
-
-# Option 4: Legacy SQL seed (if needed)
-docker-compose exec backend npm run seed
+# Test the seeding (optional)
+./test-schema-seeding.sh
 ```
 
-The seed script will populate the database with:
-- 5 sample organisations
-- 10 sample users
-- 15 sample tickets with various statuses
+The schema file will populate the database with:
+- 10 sample organisations
+- 21 sample users
+- 35 sample tickets with various statuses
 
 #### API Endpoints
 
@@ -95,9 +92,14 @@ The system now includes comprehensive JWT authentication:
 - Profile management and password updates
 
 **Test Users (from seed data):**
-- Alice: `alice@acme.com` / `password123`
-- Bob: `bob@acme.com` / `password123`
-- Carol: `carol@globex.com` / `password123`
+- Alice: `alice@acme.com` / `password123` (Acme Corp)
+- Bob: `bob@acme.com` / `password123` (Acme Corp)
+- Carol: `carol@globex.com` / `password123` (Globex Inc)
+- Sarah: `sarah@techcorp.com` / `password123` (TechCorp Solutions)
+- Michael: `michael@techcorp.com` / `password123` (TechCorp Solutions)
+- James: `james@digitalinnovations.com` / `password123` (Digital Innovations Ltd)
+- Admin: `admin@system.com` / `password123` (Admin - can see all organizations)
+- And 15 more users across 10 organizations...
 
 **Testing Authentication:**
 ```bash
@@ -114,9 +116,12 @@ The system implements database-level Row-Level Security using TypeORM:
 
 **Features:**
 - Users can only see tickets from their own organisation
+- Admin users can see all tickets across all organisations
 - Database-level enforcement (impossible to bypass)
 - TypeORM integration with custom repository
-- Automatic filtering on all ticket operations
+- Comprehensive RLS policies for SELECT, INSERT, UPDATE, DELETE
+- Admin users cannot create tickets (business rule enforced by RLS)
+- Regular users can only modify tickets from their organisation
 - Performance optimized with proper indexes
 
 **Implementation:**
@@ -127,6 +132,9 @@ The system implements database-level Row-Level Security using TypeORM:
 
 **Testing RLS:**
 ```bash
+# Test RLS policies
+./test-rls.sh
+
 # Login as Alice (Acme Corp) - should only see Acme Corp tickets
 curl -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
@@ -136,6 +144,11 @@ curl -X POST http://localhost:4000/api/auth/login \
 curl -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"carol@globex.com","password":"password123"}'
+
+# Login as Admin - should see all tickets but cannot create tickets
+curl -X POST http://localhost:4000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@system.com","password":"password123"}'
 ```
 
 See `docs/TYPEORM-RLS-IMPLEMENTATION.md` for detailed documentation.

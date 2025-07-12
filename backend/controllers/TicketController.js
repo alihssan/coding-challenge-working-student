@@ -8,6 +8,9 @@ export class TicketController {
   }
 
   getAllTickets = asyncHandler(async (req, res) => {
+    console.log(`TicketController.getAllTickets - User:`, req.user);
+    console.log(`TicketController.getAllTickets - User ID: ${req.user?.userId}, Role: ${req.user?.role}`);
+    
     const filters = {
       status: req.query.status,
       organisation_id: req.query.organisation_id,

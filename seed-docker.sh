@@ -1,9 +1,8 @@
 #!/bin/bash
 
-echo "Waiting for PostgreSQL to be ready..."
-sleep 15
-
-echo "Running database seed with TypeORM..."
-docker-compose exec backend npm run seed:typeorm
-
-echo "Database seeding completed!" 
+echo "Database is automatically seeded via db/schema.sql when Docker starts up."
+echo "No manual seeding required - the schema file contains all necessary seed data."
+echo ""
+echo "If you need to reseed the database, restart the Docker containers:"
+echo "  docker compose down"
+echo "  docker compose up" 

@@ -7,10 +7,8 @@
     "dev": "nodemon",
     "start": "node --loader ts-node/esm index.js",
     "test": "echo \"No tests yet\"",
-    "seed": "node db/seed.js",
-    "seed:docker": "sleep 10 && node db/seed.js",
-    "seed:typeorm": "node --experimental-specifier-resolution=node --loader ts-node/esm db/seed-typeorm.js",
-    "seed:typeorm:docker": "sleep 10 && node --experimental-specifier-resolution=node --loader ts-node/esm db/seed-typeorm.js",
+    "seed": "echo 'Database is seeded via db/schema.sql automatically by Docker'",
+    "seed:docker": "echo 'Database is seeded via db/schema.sql automatically by Docker'",
     "migrate": "node --experimental-specifier-resolution=node --loader ts-node/esm migrations/run-migrations.js",
     "migrate:docker": "sleep 10 && node --experimental-specifier-resolution=node --loader ts-node/esm migrations/run-migrations.js"
   },

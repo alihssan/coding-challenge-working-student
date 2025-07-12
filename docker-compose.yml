@@ -30,10 +30,10 @@ services:
       PORT: 4000
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: postgres
+      DB_USER: rls_test_user
+      DB_PASSWORD: password123
       DB_NAME: ticketing_db
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/ticketing_db
+      DATABASE_URL: postgresql://rls_test_user:password123@postgres:5432/ticketing_db
     depends_on:
       postgres:
         condition: service_healthy

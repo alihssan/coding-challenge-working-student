@@ -8,8 +8,8 @@ export const createDataSource = () => {
     type: "postgres",
     host: process.env.DB_HOST || "localhost",
     port: parseInt(process.env.DB_PORT) || 5432,
-    username: process.env.DB_USER || "postgres",
-    password: process.env.DB_PASSWORD || "postgres",
+    username: process.env.DB_USER || "rls_test_user",
+    password: process.env.DB_PASSWORD || "password123",
     database: process.env.DB_NAME || "ticketing_db",
     synchronize: false,
     logging: process.env.NODE_ENV === "development",
@@ -17,9 +17,13 @@ export const createDataSource = () => {
     subscribers: [],
     migrations: [],
     extra: {
-      max: 20,
+      // Reduce connection pool size to minimize RLS issues
+      max: 5,
+      min: 1,
       connectionTimeoutMillis: 5000,
       idleTimeoutMillis: 30000,
+      // Use a single connection per request to ensure RLS works
+      statement_timeout: 30000,
     },
   });
 };
