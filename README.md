@@ -110,6 +110,77 @@ node test-auth.js
 
 See `docs/JWT-Authentication.md` for detailed documentation.
 
+#### JWT Token Obfuscation
+
+The system implements advanced JWT token obfuscation to enhance security by making decoded tokens unreadable:
+
+**Obfuscation Techniques:**
+
+**1. XOR Cipher Obfuscation**
+- **Payload Encryption**: User data is encrypted using XOR cipher with a secret key
+- **Abbreviated Fields**: Uses shortened field names (`uid`, `em`, `org`, `rl`) instead of full names
+- **Base64 Encoding**: Obfuscated data is base64 encoded for additional obfuscation
+- **Result**: Decoded tokens show encrypted data instead of plain user information
+
+**2. Hash-Based Obfuscation (Alternative)**
+- **Data Hashing**: User information is hashed using SHA256 instead of storing directly
+- **Minimal Payload**: JWT contains only hash, timestamp, and random salt
+- **Server Verification**: Requires server-side user data for token validation
+
+**Implementation Details:**
+
+**Obfuscated Token Structure:**
+```json
+{
+  "data": "eyJ1aWQiOjEsImVtIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsIm9yZyI6MSwicmwiOiJ1c2VyIiwidHMiOjE2MzQ1Njc4OTB9",
+  "v": "1",
+  "t": 1634567890
+}
+```
+
+**Instead of readable:**
+```json
+{
+  "userId": 1,
+  "email": "user@example.com", 
+  "organisationId": 1,
+  "role": "user"
+}
+```
+
+**Security Benefits:**
+- **Information Hiding**: User data is not immediately visible when tokens are decoded
+- **Token Tampering Prevention**: Obfuscation makes token modification more difficult
+- **Privacy Protection**: Sensitive information like user IDs and emails are concealed
+- **Defense in Depth**: Additional security layer beyond standard JWT signing
+
+**Configuration:**
+```env
+# JWT Obfuscation Key (add to .env)
+JWT_OBFUSCATION_KEY=your-super-secret-obfuscation-key-change-this
+```
+
+**Usage:**
+- **Automatic**: All JWT tokens are automatically obfuscated during generation
+- **Transparent**: Authentication middleware handles deobfuscation automatically
+- **Backward Compatible**: Legacy token verification methods still available
+
+**Testing Obfuscation:**
+```bash
+# Login and get obfuscated token
+curl -X POST http://localhost:4000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"alice@acme.com","password":"password123"}'
+
+# Decode the token at jwt.io - you'll see obfuscated data
+# The actual user information is encrypted and not readable
+```
+
+**Files:**
+- `backend/services/ObfuscatedJWTService.js` - Core obfuscation logic
+- `backend/services/AuthService.js` - Integration with authentication
+- `backend/middleware/auth.js` - Updated middleware for obfuscated tokens
+
 #### Row-Level Security (RLS)
 
 The system implements comprehensive database-level Row-Level Security using PostgreSQL RLS policies with TypeORM integration:

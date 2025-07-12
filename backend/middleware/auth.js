@@ -15,7 +15,8 @@ export const authenticateToken = (req, res, next) => {
   }
 
   try {
-    const decoded = authService.verifyToken(token);
+    // Use obfuscated token verification
+    const decoded = authService.verifyObfuscatedToken(token);
     req.user = decoded;
     next();
   } catch (error) {
@@ -33,7 +34,8 @@ export const optionalAuth = (req, res, next) => {
 
   if (token) {
     try {
-      const decoded = authService.verifyToken(token);
+      // Use obfuscated token verification
+      const decoded = authService.verifyObfuscatedToken(token);
       req.user = decoded;
     } catch (error) {
       // Token is invalid, but we continue without authentication

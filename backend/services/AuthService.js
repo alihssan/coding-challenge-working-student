@@ -3,11 +3,13 @@ import bcrypt from 'bcryptjs';
 import { User } from '../db/entities/User.js';
 import { getRepository } from '../db/typeorm.js';
 import { config } from '../config/app.js';
+import { ObfuscatedJWTService } from './ObfuscatedJWTService.js';
 
 export class AuthService {
   constructor() {
     this.jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
     this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '24h';
+    this.obfuscatedJWTService = new ObfuscatedJWTService();
   }
 
   get userRepository() {
@@ -74,8 +76,8 @@ export class AuthService {
       throw error;
     }
 
-    // Generate JWT token
-    const token = this.generateToken(user);
+    // Generate obfuscated JWT token
+    const token = this.obfuscatedJWTService.generateToken(user);
 
     // Return user data and token
     const { password: _, ...userWithoutPassword } = user;
@@ -105,7 +107,7 @@ export class AuthService {
   }
 
   /**
-   * Verify JWT token
+   * Verify JWT token (legacy method)
    * @param {string} token - JWT token
    * @returns {Object} Decoded token payload
    */
@@ -115,6 +117,15 @@ export class AuthService {
     } catch (error) {
       throw new Error('Invalid or expired token');
     }
+  }
+
+  /**
+   * Verify obfuscated JWT token
+   * @param {string} token - JWT token
+   * @returns {Object} Decoded token payload
+   */
+  verifyObfuscatedToken(token) {
+    return this.obfuscatedJWTService.verifyToken(token);
   }
 
   /**
